@@ -174,6 +174,25 @@ def extrair_e_salvar():
         print("Dica: Verifique as configurações no arquivo .env e se o banco de dados está ativo.")
         return
 
+    # Garante que a coluna 'fonte' existe na tabela 'clientes'
+    db_tipo = os.getenv("DB_TIPO", "sqlite").lower()
+    try:
+        if db_tipo == "mysql":
+            cursor.execute("SHOW COLUMNS FROM clientes LIKE 'fonte'")
+            col_exists = cursor.fetchone() is not None
+        else:
+            cursor.execute("PRAGMA table_info(clientes)")
+            col_exists = 'fonte' in [row[1] for row in cursor.fetchall()]
+            
+        if not col_exists:
+            print("Adicionando coluna 'fonte' na tabela 'clientes'...")
+            cursor.execute("ALTER TABLE clientes ADD COLUMN fonte VARCHAR(255) NULL")
+            conexao.commit()
+    except Exception as e:
+        print(f"Aviso ao verificar/adicionar coluna 'fonte': {e}")
+
+    nome_planilha = os.path.basename(CAMINHO_PLANILHA)
+
     total_processados = 0
     total_inseridos = 0
     total_erros = 0
@@ -238,12 +257,12 @@ def extrair_e_salvar():
 
         # 3. Transação de Inserção nas duas tabelas
         try:
-            # SQL para inserir na tabela clientes
+            # SQL para inserir na tabela clientes com a coluna 'fonte'
             sql_cliente = f"""
-                INSERT INTO clientes (nome, email, tipo_documento, documento, status, contrato, telefone, data_nascimento)
-                VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})
+                INSERT INTO clientes (nome, email, tipo_documento, documento, status, contrato, telefone, data_nascimento, fonte)
+                VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})
             """
-            valores_cliente = (nome, email, tipo_documento, documento, status, contrato, telefone, data_nascimento)
+            valores_cliente = (nome, email, tipo_documento, documento, status, contrato, telefone, data_nascimento, nome_planilha)
             cursor.execute(sql_cliente, valores_cliente)
             
             # Recupera o ID gerado pelo AUTO_INCREMENT
