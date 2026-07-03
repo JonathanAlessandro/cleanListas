@@ -1,0 +1,25 @@
+# Ignorear arquivo .env
+.env
+
+# Ignorar arquivos de banco de dadosSQLite (não enviar para o Git)
+*.db
+
+# Ignorar arquivos de cache ou temporários do Python/PIP
+__pycache__/
+*.pyc
+
+# Ignorar arquivos de desenvolvimento
+*.pyo
+*.pyd
+*.egg-info/
+
+# Ignorar ambientes virtuais (se usarvenv/env)
+env/
+venv/
+
+# Ignorar arquivos de IDE (opcional)
+.idea/
+.vscode/
+
+# Arquivos de configuração específicos do sistema (opcional)
+Thumbs.db
